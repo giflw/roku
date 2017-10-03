@@ -1,7 +1,6 @@
 package com.itquasar.multiverse.roku;
 
 import java.io.*;
-import java.util.ArrayList;
 import java.util.Scanner;
 
 public class Console {
@@ -120,7 +119,27 @@ public class Console {
         if (input.equals("exit"))
             System.exit(1);
         else if (input.equals("help")) {
-            return NORMAL + "General Commands:" + "\n" + "\thelp\t\tdisplay this message" + "\n" + "\tlast\t\tconnect to the last IP Address used" + "\n" + "\tfind\t\tscan the network for a Roku device and connect to it" + "\n" + "\tfind all\tscan the network for multiple roku devices and display their addresses\n" + "\texit\t\texit the terminal" + "\n" + "\tuninstall\tdisplay uninstall instructions" + "\n" + "\t" + "\n" + "Roku Commands:" + "\n" + "\tconnect <ip address>" + "\n" + "\ttype <text>" + "\n" + "\thome" + "\n" + "\tplay" + "\n" + "\tselect" + "\n" + "\tleft/right/up/down (l/r/u/d for short)" + "\n" + "\tinstantreplay" + "\n" + "\tnetflix" + "\n" + "\tamazon" + "\n" + "\tsearch" + "\n" + "\tx (access a GUI to control with arrow keys)" + "\n" + "" + "\n" + "";
+            return NORMAL
+                    + "General Commands:\n"
+                    + "\thelp\t\tdisplay this message\n"
+                    + "\tlast\t\tconnect to the last IP Address used\n"
+                    + "\tfind\t\tscan the network for a Roku device and connect to it\n"
+                    + "\tfind all\tscan the network for multiple roku devices and display their addresses\n"
+                    + "\texit\t\texit the terminal\n"
+                    + "\tuninstall\tdisplay uninstall instructions\n"
+                    + "\t\n" + "Roku Commands:\n"
+                    + "\tconnect <ip address>\n"
+                    + "\ttype <text>\n"
+                    + "\thome\n"
+                    + "\tplay\n"
+                    + "\tselect\n"
+                    + "\tleft/right/up/down (l/r/u/d for short)\n"
+                    + "\tinstantreplay\n"
+                    + "\tnetflix\n"
+                    + "\tamazon\n"
+                    + "\tsearch\n"
+                    + "\tx (access a GUI to control with arrow keys)\n"
+                    + "\n";
         } else if (input.equals("netflix")) {
             r.netflix();
             return "Launched netflix...";
@@ -131,64 +150,15 @@ public class Console {
             return "No last address found.";
         } else if (input.equals("find")) {
 			/* build a list of threads to run based on the thread count */
-            System.out.println(BLUE + "[*] " + PURPLE + "Creating " + Scan.threadCount + " MSEARCH requests to 239.255.255.250 on port 1900..." + NORMAL);
-            ArrayList<Scan> threads = new ArrayList<Scan>();
-            for (int i = 0; i < Scan.threadCount; i++)
-                threads.add(new Scan());
+            System.out.println(BLUE + "[*] " + PURPLE + "Creating MSEARCH requests to 239.255.255.250 on port 1900..." + NORMAL);
 
-			/* start each thread */
-            System.out.println(BLUE + "[*] " + PURPLE + "Sending multicast SSDP MSEARCH requests..." + NORMAL);
-            for (Scan scan : threads)
-                scan.start();
-
-			/* wait for a response */
-            System.out.println(BLUE + "[*] " + PURPLE + "Waiting for network response..." + NORMAL);
-            while (Scan.results.size() == 0) {
-                try {
-                    Thread.sleep(10);
-                } catch (Exception e) {
-                }
-            }
-
-			/* stop each thread */
-            for (Scan scan : threads)
-                scan.interrupt();
+            Scan scan = new Scan();
 
 			/* display results */
-            String result = Scan.results.get(0);
+            String result = scan.scanForRokus().iterator().next();
             System.out.println(BLUE + "[*] " + PURPLE + "Found Roku at " + result + "..." + NORMAL);
             process("connect " + result);
             return "";
-        } else if (input.equals("find all")) {
-			/* build a list of threads to run based on the thread count */
-            System.out.println(BLUE + "[*] " + PURPLE + "Scanning, press [ENTER] when done..." + NORMAL);
-            ArrayList<Scan> threads = new ArrayList<Scan>();
-            for (int i = 0; i < Scan.threadCount; i++)
-                threads.add(new Scan());
-
-			/* start each thread */
-            for (Scan scan : threads)
-                scan.start();
-
-			/* wait for a response */
-            Scan.spontaneousOutput = true;
-            System.out.println(BLUE + "[*] " + PURPLE + "Results: " + NORMAL);
-            Scanner scannerEnter = new Scanner(System.in);
-            String possiblyEnter;
-            while (scannerEnter.hasNextLine()) {
-                possiblyEnter = scannerEnter.nextLine();
-                if (possiblyEnter.trim().equals("")) {
-                    System.out.println(BLUE + "[*] " + PURPLE + "Scan complete" + NORMAL);
-                    Scan.spontaneousOutput = false;
-                    break;
-                }
-            }
-
-			/* stop each thread */
-            for (Scan scan : threads)
-                scan.interrupt();
-
-            return "\b\b";
         } else if (input.equals("uninstall")) {
             return "To uninstall roku, navigate to /etc/roku and run sudo ./uninstall";
         } else if (input.equals("amazon")) {
